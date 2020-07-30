@@ -1,0 +1,5 @@
+= KATAPOD - Implementace
+
+Implementace API pro podpis a orazitkovani casovym razitkem.
+
+Podrobny popis pouziti API viz _KATAPOD-API_

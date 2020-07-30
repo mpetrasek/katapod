@@ -1,0 +1,43 @@
+= KATAPOD - API
+
+Interface pro nasledne klienty, kteri zprostredkuji interakci s uzivatelem.
+
+Kazdy klient musi provest konfiguraci sluzby, kterou chce pouzivat a nasledne sluzbu zavolat.
+Sluzby nezapisuji zadne soubory na disk. Pripadny zapis si musi zajistit klient.
+
+Prikad podepsani adresare:
+
+----
+Katapod service = new KatapodImpl();
+SignConfiguration sconf = new SignConfigurationImpl.Builder()
+									.withCertificateFile("/path/to/certificate.p12")
+									.andPassword("certificate_password")
+									.build();
+SignResult result = service.signDir("/path/to/dir","verification_number", sconf);
+
+//write files to disk
+Files.write("/path/to/dir/Overeni_UOZI.txt"), result.getTextFile().getBytes("UTF-8"));
+Files.write("/path/to/dir/Overeni_UOZI.txt.p7s"), result.getSignedData());
+----
+
+Priklad orazitkovani adresare:
+
+----
+      Katapod service = new KatapodImpl();
+      //free TSA service
+  		StampConfiguration sconf = new StampConfigurationImpl.Builder()
+									.withTSA("https://freetsa.org/tsr")
+									.build();
+
+	    //paid Czech Post service  - packages
+  		StampConfiguration sconf = new StampConfigurationImpl.Builder()
+										.withTSA("https://www3.postsignum.cz/TSS/TSS_user/")
+										.andUser("user_name")
+										.andPassword("user_password")
+										.build();
+
+      byte[] result = service.stamp(my_binary_data, sconf);
+
+      //write file to disk
+      Files.write("/path/to/dir/Overeni_UOZI.txt.p7s.tsr"), result);
+----
