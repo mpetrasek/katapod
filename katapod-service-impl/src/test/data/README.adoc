@@ -1,0 +1,11 @@
+= How to create test, self-signed keystore
+
+. Create certificate and private key
+
+  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3650
+
+. Convert them to p12
+
+  openssl pkcs12 -export -out keyStore.p12 -inkey key.pem -in cert.pem -name tester
+
+Keystore password = password

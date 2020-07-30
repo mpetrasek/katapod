@@ -1,0 +1,16 @@
+= KATAPOD
+
+Alternativa k proprietarnimu software
+link:https://www.cuzk.cz/Zememerictvi/Zememericke-cinnosti/Overovani-vysledku-zememerickych-cinnosti-v-elektr.aspx[KDirSign]
+od CUZK, ktery je primarne urcen pro
+katastralni pracoviste a nema zadnou uzivatelskou podporu. Na nekterych strojich
+nefunguje a pak ma OUZI proste smulu.
+
+Projekt se sklada z nekolika casti:
+
+. *katapod-service-api* - definice rozhrani pro klienta
+. *katapod-service-impl* - implementace API
+. *katapod-client-cli* - CLI (command line interface) klient. Ovladani z prikazove radky.
+. *katapod-client-mail* - umoznuje zaslani zdrojovych souboru emailem. Vysledkem je ZIP v nemz jsou
+                         krome zdrojovych souboru jeste vygenerovane soubory
+. *katapod-client-fx* - OpenFX klient - OpenSource alternativa ke _KDirSign_
