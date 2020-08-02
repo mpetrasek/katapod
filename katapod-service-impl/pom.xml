@@ -10,7 +10,7 @@
 
 	<groupId>cz.petrary.geo.katapod</groupId>
 	<artifactId>katapod-service-impl</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>cz.petrary.geo.katapod</groupId>
 			<artifactId>katapod-service-api</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
