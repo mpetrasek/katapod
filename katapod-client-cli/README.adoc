@@ -2,18 +2,103 @@
 
 Jednoduchy klient ovladany z prikazove radky.
 
-Umi 4 prikazy
+Umi 3 prikazy
 
-. init - provede inicializaci nastaveni. Na hodnoty se dopta uzivatele
-. sign - provede podpis adresare
-. stamp - prida k podepsanemu souboru casove razitko
-. run - provede podpis a orazitkovani. Stejne jako postupne volani sign + stamp
+. podepis - provede podpis adresare
+. orazitkuj - prida k podepsanemu souboru casove razitko
+. pao - provede podpis a orazitkovani. Stejne jako postupne volani podepis + orazitkuj
 
-== Init
+== Zakladni konfigurace
 
-Razitko a podpis potrebuji pro svuj beh nekolik parametru. Hodnoty parametru
-jsou zapsany k konfiguracnim souboru `katapod.properties`.
+Pro podpis a casove razitko jsou potreba konfiguracni udaje.
+Zakladni nastaveni s testovacimi hodnotami je ulozeno v souboru `katapod.properties`.
+Nastaveni je zadouci zmenit podle skutecnych hodnot pred samotnym spustenim klienta.
 
-Uzivatel muze hodnoty zapsat rucne primo do konfiguracniho souboru nebo
-pomoci prikazu `init`. Program se pak dopta na hodnoty parametru primo v prikazove
-radce.
+Dalsi moznosti je vytvorit si dalsi, dodatecne konfiguracni soubory a ty
+pouzivat pro kazde spusteni zvlast. Pokud neni uzivatelem zadan jiny konfiguracni
+soubor, pak se bude hledat `katapod.properties`.
+
+Priklad pouziti uzivatelskeho konfiguracniho soubouru:
+
+  ./run-console.sh podepis -cfg mujsoubor.properties CESTA_K_ADRESARI CISLO_OVERENI
+
+== Podepis
+
+Sestavi soubory:
+* `Overeni_UOZI.txt`
+* `Overeni_UOZI.txt.p7s`
+
+a ulozi je do adresare (toho zdrojoveho).
+
+Prikaz umoznuje prepsat jednotlive hodnoty zapsane v konfiguracnim souboru.
+
+Napoveda je dostupna pres:
+
+  ./run-console.sh podepis --help
+
+=== Vstupy
+
+* Cesta k adresari se soubory k podpisu
+* Cislo overeni
+
+
+*Priklad pouziti:*
+
+Zakladni
+
+  ./run-console.sh podepis CESTA_K_ADRESARI CISLO_OVERENI
+
+S uzivatelem dodanym konfiguracnim souborem
+
+  ./run-console.sh podepis -cfg mujsoubor.properties CESTA_K_ADRESARI CISLO_OVERENI
+
+S prepsanim nektere z default hodnot
+
+  ./run-console.sh podepis -cert CERTIFIKAT.p12 -cpasswd HESLO -rm CESTA_K_ADRESARI CISLO_OVERENI
+
+
+
+
+== Orazitkuj
+
+Sestavi soubor `Overeni_UOZI.txt.p7s.tsr` a ulozi jej do adresare (zdrojoveho)
+
+Napoveda je dostupna pres:
+
+  ./run-console.sh orazitkuj --help
+
+=== Vstupy
+
+* Cesta k adresari se souborem `Overeni_UOZI.txt.p7s`
+
+
+*Priklad pouziti:*
+
+Zakladni
+
+  ./run-console.sh orazitkuj CESTA_K_ADRESARI
+
+S uzivatelem dodanym konfiguracnim souborem
+
+  ./run-console.sh orazitkuj -cfg mujsoubor.properties CESTA_K_ADRESARI
+
+S prepsanim nektere z default hodnot
+
+  ./run-console.sh orazitkuj -url URL CESTA_K_ADRESARI
+
+
+== Podepis A Orazitkuj
+
+Postupne volani Podepis a Orazitkuj. Program umoznuje pouzit uzivatelskou konfiguraci.
+Jednotlive konfiguracni hodnoty prepisovat nelze.
+
+=== Vstupy
+
+* Cesta k adresari se soubory k podpisu
+* Cislo overeni
+
+*Priklad pouziti:*
+
+Zakladni
+
+  ./run-console.sh pao CESTA_K_ADRESARI CISLO_OVERENI
