@@ -59,7 +59,9 @@ public class HashHelper {
 		File[] dirList = new File(dirPath).listFiles();
 		Map<String, InputStream> streams = new HashMap<>();
 		for (File file : dirList) {
-			streams.put(file.getName(),new FileInputStream(file));
+			if (file.isFile()) {  //adresare je treba vynechat
+				streams.put(file.getName(),new FileInputStream(file));
+			}
 		}
 		
 		return hashForStreams(streams);
