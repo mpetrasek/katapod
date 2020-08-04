@@ -71,8 +71,18 @@ public class StampConfigurationImpl implements StampConfiguration {
             return this;
         }
 
+        public Builder andOptionalUser(Optional<String> tsaUserName){
+        	this.tsaUserName = tsaUserName;
+            return this;
+        }
+
         public Builder andPassword(String tsaUserPasswd){
         	this.tsaUserPasswd = Optional.ofNullable(tsaUserPasswd);
+            return this;
+        }
+
+        public Builder andOptionalPassword(Optional<String> tsaUserPasswd){
+        	this.tsaUserPasswd = tsaUserPasswd;
             return this;
         }
 

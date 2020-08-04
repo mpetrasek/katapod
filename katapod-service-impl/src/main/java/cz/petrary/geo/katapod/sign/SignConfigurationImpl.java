@@ -101,6 +101,11 @@ public class SignConfigurationImpl implements SignConfiguration {
             return this;
         }
 
+        public Builder setCleanResultFiles(boolean clean){
+        	this.cleanOldResultFiles = clean;
+            return this;
+        }
+
         /**
          * Over platnost nastaveni a vrat sestavenou konfiguraci
          * @return
