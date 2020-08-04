@@ -1,0 +1,19 @@
+= KATAPOD - CLIENT CLI
+
+Jednoduchy klient ovladany z prikazove radky.
+
+Umi 4 prikazy
+
+. init - provede inicializaci nastaveni. Na hodnoty se dopta uzivatele
+. sign - provede podpis adresare
+. stamp - prida k podepsanemu souboru casove razitko
+. run - provede podpis a orazitkovani. Stejne jako postupne volani sign + stamp
+
+== Init
+
+Razitko a podpis potrebuji pro svuj beh nekolik parametru. Hodnoty parametru
+jsou zapsany k konfiguracnim souboru `katapod.properties`.
+
+Uzivatel muze hodnoty zapsat rucne primo do konfiguracniho souboru nebo
+pomoci prikazu `init`. Program se pak dopta na hodnoty parametru primo v prikazove
+radce.

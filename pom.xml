@@ -18,8 +18,8 @@
   <modules>
     <module>katapod-service-api</module>
     <module>katapod-service-impl</module>
-    <!--module>katapod-cli-client</module>
-    <module>katapod-smtp-client</module>
+    <module>katapod-client-cli</module>
+    <!--module>katapod-smtp-client</module>
     <module>katapod-openfx-client</module-->
   </modules>
 
@@ -36,6 +36,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
