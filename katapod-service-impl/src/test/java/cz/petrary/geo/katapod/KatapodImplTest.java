@@ -21,6 +21,7 @@ package cz.petrary.geo.katapod;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 import cz.petrary.geo.katapod.sign.SignException;
@@ -32,12 +33,9 @@ class KatapodImplTest {
 
 	@Test
 	void testSign() throws SignException {
-		Katapod service = KatapodObjectFactory.getKatapod();
-		SignConfiguration sconf = KatapodObjectFactory.configureSignature()
-				.withCertificate(TestData.keystore())
-				.andPassword("password")
-				.build();
-		SignResult result = service.signDir(TestData.testFiles(),TestData.NUMBER, sconf);
+		Path testDir = TestData.TEST_DIR;
+		Katapod service = new KatapodImpl();
+		SignResult result = service.signDir(testDir,TestData.NUMBER, new TestData());
 		
 		assertEquals(TestData.correctTextContent(), result.getTextFile());
 		 
@@ -50,13 +48,10 @@ class KatapodImplTest {
 	
 	@Test
 	void testStamp() throws StampException {
-		Katapod service = KatapodObjectFactory.getKatapod();
-		StampConfiguration sconf = KatapodObjectFactory.configureStamp()
-				.withTSA("https://freetsa.org/tsr")
-				.build();
+		Katapod service = new KatapodImpl();
 		
 		 @SuppressWarnings("unused")
-		byte[] result = service.stamp("SignResult.getSignedData".getBytes(), sconf);
+		byte[] result = service.stamp("SignResult.getSignedData".getBytes(), new TestData());
 		 
 		 //write file to disk
 		 //Files.write("/path/to/dir/Overeni_UOZI.txt.p7s.tsr"), result);

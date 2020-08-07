@@ -29,7 +29,7 @@ class TextFileTest {
 	@Test
 	void test() {
 		try {
-			List<String> hashes = HashHelper.hashForStreams(TestData.testFiles());
+			List<String> hashes = HashHelper.hashForAllFiles(TestData.TEST_DIR);
 			String result = TextFile.create(TestData.OUZI_NAME,TestData.NUMBER, hashes);
 			assertEquals(TestData.correctTextContent(), result);
 			//System.out.println(result);

@@ -21,14 +21,20 @@ package cz.petrary.geo.katapod.sign;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.bouncycastle.util.encoders.Base64;
 
-public class TestData {
+import cz.petrary.geo.katapod.Configuration;
+
+public class TestData implements Configuration {
 	
 	
 	//openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3650
@@ -41,20 +47,7 @@ public class TestData {
 	public static final String OUZI_NAME = "TESTER";
 	public static final String NUMBER = "45/2020";
 	
-	
-	public static InputStream keystore() {
-		return new ByteArrayInputStream(Base64.decode(KEYSTORE_P12));
-	}
-	
-	
-	
-	public static Map<String, InputStream> testFiles() {
-		Map<String, InputStream> result = new LinkedHashMap<>();
-		for (int i = 0; i < 5; i++) {
-			result.put("soubor"+i+".txt", new ByteArrayInputStream(("HASH"+i+"\n").getBytes()));
-		}
-		return result;		
-	}
+	public static final Path TEST_DIR = Paths.get("").resolve("src/test/data/signdir");
 	
 	
 	public static String correctTextContent() {
@@ -86,6 +79,52 @@ public class TestData {
 		sb.append("\n");
 
 		return sb.toString();
+	}
+
+
+
+	@Override
+	public InputStream getCertificate() {
+		return new ByteArrayInputStream(Base64.decode(KEYSTORE_P12));
+	}
+
+
+
+	@Override
+	public String getCertificatePassword() {
+		return PASSWORD;
+	}
+
+
+
+	@Override
+	public URL getTsaUrl() {
+		try {
+			return new URL("https://freetsa.org/tsr");
+		} catch (MalformedURLException e) {
+			throw new RuntimeException();
+		}
+	}
+
+
+
+	@Override
+	public Optional<String> getTsaUserName() {
+		return Optional.empty();
+	}
+
+
+
+	@Override
+	public Optional<String> getTsaUserPasswd() {
+		return Optional.empty();
+	}
+
+
+
+	@Override
+	public Map<String, String> getAdditionalConfiguration() {
+		return null;
 	}
 
 }

@@ -21,8 +21,8 @@ package cz.petrary.geo.katapod.sign;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,12 +30,10 @@ class HashHelperTest {
 
 	@Test
 	void testOneHash() {
-		ByteArrayInputStream bais = new ByteArrayInputStream("Hash me!\n".getBytes());
-		//echo "Hash me!" | sha512sum | awk '{ print toupper($0) }'
-		//sha512sum test.txt | sed 's/^\([a-z0-9]*\)\ \ \([a-zA-Z0-9_\.]*\)/\2\U;\1/'
+		Path testFile = TestData.TEST_DIR.resolve("soubor0.txt");
 		try {
-			String result = HashHelper.countStreamHash(bais, "test.txt", HashHelper.getMessageDigest());
-			assertEquals("test.txt;4C4A59A7D958CFF035EB7D752B319B90337037E352B89D58AA5BE29EF051EA0A565133781AA3279384654274C4786893287EA8037F0A1A15D9B40EA0BC4BE73C",
+			String result = HashHelper.countHash(testFile.toFile(), HashHelper.getMessageDigest());
+			assertEquals("soubor0.txt;E42C5E45751ABC4DB025B60BA3E477737B3A85C0633AFCDA90D3C68E441B5B8A9038B11065944DE961CA09454FC287BF39CFD3AE802FAEC5776F84AFC1C3854D",
 					result);
 		} catch (IOException e) {
 			fail("Wrong hash");

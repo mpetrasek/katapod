@@ -21,6 +21,7 @@ package cz.petrary.geo.katapod.sign;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Path;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -43,8 +44,8 @@ public class BaseDirHelper {
 	 * @param path proverovana cesta
 	 * @return true - cesta je platna, false - neplatna cesta nebo prazdny adresar
 	 */
-	public static boolean dirCheck(String path) {
-		File dir = new File(path);
+	public static boolean dirCheck(Path path) {
+		File dir = path.toFile();
 		if (!dir.exists() || !dir.isDirectory()) {
 			log.error("Invalid directory {}", path);
 			return false;
@@ -65,11 +66,11 @@ public class BaseDirHelper {
 	 * Procisti adresar. Vymaze vsechny generovane soubory. To jsou ty, ktere zacinaji na ${text.file.name} - coz je "Overeni_UOZI.txt"
 	 * @param path cesta k adresari
 	 */
-	public static void prune(String path) {
+	public static void prune(Path path) {
 		log.debug("Cleaning base dir");
 		ResourceBundle rb = ResourceBundle.getBundle("application");
 		final String filter = rb.getString("text.file.name");
-		File dir = new File(path);
+		File dir = path.toFile();
 		File[] textFiles = dir.listFiles(new FilenameFilter() {
 	        @Override
 	        public boolean accept(File dir, String name) {

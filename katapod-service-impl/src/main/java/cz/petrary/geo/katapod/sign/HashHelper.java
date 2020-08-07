@@ -22,15 +22,12 @@ package cz.petrary.geo.katapod.sign;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,36 +52,21 @@ public class HashHelper {
 	 * @return nazvy souboru a jejich HASH - spodni cast souboru Overeni_OUZI - to co je za oddelovacem '----'
 	 * @throws IOException pokud se nepovede spocitat hash
 	 */
-	public static List<String> hashForAllFiles(String dirPath) throws IOException {
-		File[] dirList = new File(dirPath).listFiles();
-		Map<String, InputStream> streams = new HashMap<>();
-		for (File file : dirList) {
-			if (file.isFile()) {  //adresare je treba vynechat
-				streams.put(file.getName(),new FileInputStream(file));
-			}
-		}
-		
-		return hashForStreams(streams);
-	}
-	
-	/**
-	 * Vypocti HASH pro vsechny soubory v adresari
-	 * @param streams vstupni data. klicem je nazev souboru, hodnotou jsou jeho data jako InputStream
-	 * @return nazvy souboru a jejich HASH - spodni cast souboru Overeni_OUZI - to co je za oddelovacem '----'
-	 * @throws IOException pokud se nepovede spocitat hash
-	 */
-	public static List<String> hashForStreams(Map<String, InputStream> streams) throws IOException {
+	public static List<String> hashForAllFiles(Path dirPath) throws IOException {
+		File[] dirList = dirPath.toFile().listFiles();
 		List<String> result = new ArrayList<>();
 		MessageDigest md = getMessageDigest();
-		Set<String> keys = streams.keySet();
-		for (String key : keys) {
-			result.add(countStreamHash(streams.get(key), key, md));
+
+		Arrays.sort(dirList);
+		for (File file : dirList) {
+			if (file.isFile()) {  //adresare je treba vynechat
+				result.add(countHash(file, md));
+			}
 		}
 		
 		return result;
 	}
 	
-
 	
 	/**
 	 * Vypocti HASH pro jeden soubor/InputStream
@@ -94,13 +76,14 @@ public class HashHelper {
 	 * @return nazev souboru a jeho hash
 	 * @throws IOException  pokud se nepovede spocitat hash
 	 */
-	static String countStreamHash(InputStream stream, String fileName, MessageDigest md) throws IOException {
-		byte[] messageBytes = stream.readAllBytes();
-		byte[] messageHash = md.digest(messageBytes);
-		String result =  fileName + DELIMITER + hex(messageHash);
-		log.info("count hash = {}", result);
-		
-		return result;
+	static String countHash(File file, MessageDigest md) throws IOException {
+		try (FileInputStream stream = new FileInputStream(file)) {
+			byte[] messageBytes = stream.readAllBytes();
+			byte[] messageHash = md.digest(messageBytes);
+			String result =  file.getName() + DELIMITER + hex(messageHash);
+			log.info("count hash = {}", result);
+			return result;
+		}
 	}
 
 

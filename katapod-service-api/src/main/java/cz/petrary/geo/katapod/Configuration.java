@@ -21,38 +21,68 @@
 
 package cz.petrary.geo.katapod;
 
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Konfiguracni hodnoty nutne pro vytvoreni casoveho razitka.
- * Jedna se o:
+ * Konfiguracni hodnoty nutne pro vytvoreni podpisu a casoveho razitka.
+ * U podpisu se jedna o:
+ *  <ul>
+ *    <li>osobni certifikat UOZI - povinna hodnota, musi byt vzdy definovan</li>
+ *    <li>heslo k osobnimu certifikatu - povinna hodnota, musi byt vzdy definovana</li>
+ *    <li>moznost vymazat jiz existujici vystupni soubory z adresare - volitelne, nastaveno na <pre>true</pre> = mazat</li>
+ * </ul>
+ * 
+ * U razitka se jedna o:
  *  <ul>
  *    <li>URL na poskytovatele casovych razitek - povinna informace</li>
  *    <li>jmeno uzivatele pro sluzbu casovych razitek - volitelna</li>
  *    <li>heslo uzivatele do sluzby casovych razitek - volitelna</li>
  * </ul>
+
  */
-public interface StampConfiguration {
+public interface Configuration {
 
 
+	/**
+	 * InputStream predstavujici osobni certifikat UOZI - ocekavan ve formatu PKCS12 = tak jak ho dostane z ceske posty.
+	 * @return InputStream predstavujici osobni certifikat UOZI
+	 */
+	public InputStream  getCertificate();
+
+	/**
+	 * Heslo k osobnimu certifikatu - povinna hodnota, musi byt vzdy definovana
+	 * @return heslo k certifikatu
+	 */
+	public String getCertificatePassword();
+	
+	
 	/**
 	 * URL na poskytovatele casovych razitek - povinna informace
 	 * @return URL na poskytovatele casovych razitek - povinna informace
 	 */
-	public URL  getUrl();
+	public URL  getTsaUrl();
 
 	/**
 	 * jmeno uzivatele pro sluzbu casovych razitek - volitelna
 	 * @return jmeno uzivatele pro sluzbu casovych razitek
 	 */
-	public Optional<String> getUserName();
+	public Optional<String> getTsaUserName();
 
 	/**
 	 * heslo uzivatele pro sluzbu casovych razitek - volitelna
 	 * @return heslo uzivatele pro sluzbu casovych razitek
 	 */
-	public Optional<String> getUserPasswd();
+	public Optional<String> getTsaUserPasswd();
 
+	
+	
+	/**
+	 * Dodatecna (volitelna) konfigurace. Muze se jednat napr. o moznost promazat adresar pred podpisem, neukladani novych souboru apod.  
+	 * @return mapa hodnot pro dodatecnou konfiguraci konkretni implementace.
+	 */
+	public Map<String, String> getAdditionalConfiguration();
 
 }

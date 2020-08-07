@@ -19,11 +19,9 @@
  */
 package cz.petrary.geo.katapod;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +49,13 @@ public class KatapodImpl implements Katapod {
 	
 	
 	@Override
-	public SignResult signDir(String dirPath, String verifNumber, SignConfiguration config) throws SignException {
+	public SignResult signDir(Path dirPath, String verifNumber, Configuration config) throws SignException {
 		if (!BaseDirHelper.dirCheck(dirPath)) {
 			log.error("Invalid directory!");
 			throw new SignException("Invalid directory");
 		}
-		if (config.isCleanOldResultFiles()) {
-			BaseDirHelper.prune(dirPath);
+		if (config.getAdditionalConfiguration() == null || config.getAdditionalConfiguration().get("keepResultFiles") == null) {
+			BaseDirHelper.prune(dirPath);  //promaz drive vygenerovane soubory. Ponech pouze pokud v additional config existuje klic "keepResultFiles"
 		}
 
 		try {
@@ -73,43 +71,18 @@ public class KatapodImpl implements Katapod {
 	
 	
 	@Override
-	public SignResult signDir(Map<String, InputStream> streams, String verifNumber, SignConfiguration config)
-			throws SignException {
-		try {
-			List<String> hashes = HashHelper.hashForStreams(streams);
-			return sign(hashes, verifNumber, config);
-		} catch (IOException ioe) {
-			log.error("Unable to compute hash for files in the list", ioe);
-			throw new SignException("Unable to compute hash for files", ioe);
-		}
-	}
-
-	
-	
-	@Override
-	public byte[] stamp(byte[] data, StampConfiguration config) throws StampException {
+	public byte[] stamp(byte[] data, Configuration config) throws StampException {
 		if (config == null) {
 			log.error("Invalid configuration!");
 			throw new StampException("Invalid configuration!");
 		}
 		
 		Stamp stamp = new Stamp();
-		byte[] result = stamp.makeTimestamp(data, config.getUrl().toString(), 
-				                            config.getUserName(), config.getUserPasswd());
+		byte[] result = stamp.makeTimestamp(data, config.getTsaUrl().toString(), 
+				                            config.getTsaUserName(), config.getTsaUserPasswd());
 		return result;
 	}
 
-	
-	
-	@Override
-	public InputStream stamp(InputStream data, StampConfiguration config) throws StampException {
-		try {
-			return new ByteArrayInputStream(stamp(data.readAllBytes(), config));
-		} catch (IOException e) {
-			log.error("Unable to read input data", e);
-			throw new StampException("Unable to read input data", e);
-		}
-	}
 	
 	
 	/**
@@ -120,7 +93,7 @@ public class KatapodImpl implements Katapod {
 	 * @return
 	 * @throws SignException
 	 */
-	private SignResult sign(List<String> hashes, String verifNumber, SignConfiguration config) throws SignException {
+	private SignResult sign(List<String> hashes, String verifNumber, Configuration config) throws SignException {
 		if (config == null) {
 			log.error("Invalid configuration!");
 			throw new SignException("Invalid configuration!");
@@ -135,5 +108,8 @@ public class KatapodImpl implements Katapod {
 		log.info("Final text file was created and signed");
 		return result;	
 	}
+
+
+
 
 }

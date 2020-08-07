@@ -20,9 +20,7 @@
 
 package cz.petrary.geo.katapod;
 
-import java.io.InputStream;
-import java.util.Map;
-
+import java.nio.file.Path;
 import cz.petrary.geo.katapod.sign.SignException;
 import cz.petrary.geo.katapod.sign.SignResult;
 import cz.petrary.geo.katapod.stamp.StampException;
@@ -36,13 +34,10 @@ import cz.petrary.geo.katapod.stamp.StampException;
  * Prikad podepsani adresare:
  * <pre>
  *      Katapod service = new KatapodImpl();
- *      SignConfiguration sconf = new SignConfigurationImpl.Builder()
- *										.withCertificateFile("/path/to/certificate.p12")
- *										.andPassword("certificate_password")
- *										.build();
+ *      Configuration sconf = ...
  *      SignResult result = service.signDir("/path/to/dir","verification_number", sconf);
  *
- *      //write files to disk
+ *      //pripadne zapsani souboru na disk
  *      Files.write("/path/to/dir/Overeni_UOZI.txt"), result.getTextFile().getBytes("UTF-8"));
  *      Files.write("/path/to/dir/Overeni_UOZI.txt.p7s"), result.getSignedData());
  *
@@ -51,21 +46,10 @@ import cz.petrary.geo.katapod.stamp.StampException;
  * Priklad orazitkovani adresare:
  * <pre>
  *      Katapod service = new KatapodImpl();
- *      //free TSA service
- * 		StampConfiguration sconf = new StampConfigurationImpl.Builder()
- *									.withTSA("https://freetsa.org/tsr")
- *									.build();
- *
- *	    //paid Czech Post service  - packages
- *		StampConfiguration sconf = new StampConfigurationImpl.Builder()
- *										.withTSA("https://www3.postsignum.cz/TSS/TSS_user/")
- *										.andUser("user_name")
- *										.andPassword("user_password")
- *										.build();
- *
+ * 		Configuration sconf = ...
  *      byte[] result = service.stamp(my_binary_data, sconf);
  *
- *      //write file to disk
+ *      //pripadne zapsani souboru na disk
  *      Files.write("/path/to/dir/Overeni_UOZI.txt.p7s.tsr"), result);
  * </pre>
  */
@@ -80,19 +64,7 @@ public interface Katapod {
 	 * @return Vraci obsah nove vytvorenych dat dle § 18 odst. 5 vyhlášky č. 31/1995 Sb a jejich podpis
 	 * @throws DirSignException pokud nelze soubor vytvorit nebo podepsat
 	 */
-	public SignResult signDir(String dirPath, String verifNumber, SignConfiguration config) throws SignException;
-
-
-	/**
-	 * Vytvor text soubor s SHA512 hash od vsech souboru v adresari. Tento podepis osobnim certifikatem UOZI.
-	 * Viz  § 18 odst. 5 vyhlášky č. 31/1995 Sb
-	 * @param files seznam souboru k podpisu, kde klicem je nazev souboru a obsah je jeho InputStream
-	 * @param verifNumber cislo overeni
-	 * @param config konfigurace podpisu (osobni certifikat OUZI, heslo)
-	 * @return Vraci obsah nove vytvorenych dat dle § 18 odst. 5 vyhlášky č. 31/1995 Sb a jejich podpis
-	 * @throws DirSignException pokud nelze soubor vytvorit nebo podepsat
-	 */
-	public SignResult signDir(Map<String, InputStream> files, String verifNumber, SignConfiguration config) throws SignException;
+	public SignResult signDir(Path dirPath, String verifNumber, Configuration config) throws SignException;
 
 
 	/**
@@ -102,16 +74,7 @@ public interface Katapod {
 	 * @return vysledek vraceny z TSA
 	 * @throws DirSignException pokud nelze casove razitko vytvorit
 	 */
-	public byte[] stamp(byte[] data, StampConfiguration config) throws StampException;
+	public byte[] stamp(byte[] data, Configuration config) throws StampException;
 
-
-	/**
-	 * Vytvor casove razitko k datum.
-	 * @param data - jsou opatreny casovym razitkem v externim souboru
-	 * @param config konfigurace razitek (URL TSA sluzby, prihlasovaci udaje uzivatele)
-	 * @return vysledek vraceny z TSA
-	 * @throws DirSignException pokud nelze casove razitko vytvorit
-	 */
-	public InputStream stamp(InputStream data, StampConfiguration config) throws StampException;;
 
 }

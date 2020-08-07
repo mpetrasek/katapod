@@ -28,7 +28,8 @@ class SignTest {
 	@Test
 	void test() {
 		try {
-			Sign sign = new Sign(TestData.keystore(), TestData.PASSWORD.toCharArray());
+			TestData data = new TestData();
+			Sign sign = new Sign(data.getCertificate(), data.getCertificatePassword().toCharArray());
 			/*byte[] result = */ sign.sign("Sign me!");
 		} catch (SignException e) {
 			fail("Should be OK");
