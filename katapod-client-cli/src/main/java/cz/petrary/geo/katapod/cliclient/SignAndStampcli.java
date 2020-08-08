@@ -22,11 +22,15 @@ package cz.petrary.geo.katapod.cliclient;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.petrary.geo.katapod.Katapod;
+import cz.petrary.geo.katapod.KatapodImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -51,9 +55,13 @@ private static final Logger log = LoggerFactory.getLogger(SignAndStampcli.class)
 	public Integer call() throws Exception { 
 		try {
 		init();
-		Signcli.signDir(signDir, verNumber, parent.cfg);
-		Stampcli.stampDir(signDir, parent.cfg);
+		Path baseDir = Paths.get(signDir.getAbsolutePath());
 		
+		Katapod service = new KatapodImpl();
+		service.setConfiguration(parent.cfg);
+		Path textFilePath = service.createTextFile(baseDir, verNumber);
+		Path signFilePath = service.signDir(textFilePath);
+		service.stamp(signFilePath);
 		return 0;
 		} catch (Exception ex) {
 			log.error("Doslo k chybe.");

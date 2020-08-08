@@ -21,22 +21,31 @@ package cz.petrary.geo.katapod.stamp;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import cz.petrary.geo.katapod.sign.TestData;
+
 class StampTest {
 
 	@Test
-	void test() {
+	void test() throws IOException {
 		Stamp stamp = new Stamp();
 		Optional<String> usrname = Optional.empty();
 		Optional<String> passwd = Optional.empty();
-		
+	
+		Path testDir = TestData.TEST_DIR;
+		Path signatureFile = testDir.resolve("Overeni_UOZI.txt.p7s");
+		Files.write(signatureFile, "SignResult.getSignedData".getBytes());
+	
 		//Czech Post TSA URL =  "https://www3.postsignum.cz/TSS/TSS_user/"
 		try {
-			/*byte[] result = */ stamp.makeTimestamp("Timestamp me!".getBytes(), "https://freetsa.org/tsr", usrname, passwd);
-		} catch (StampException e) {
+			/*byte[] result = */ stamp.makeTimestamp(signatureFile.toFile(), "https://freetsa.org/tsr", usrname, passwd);
+		} catch (Exception e) {
 			fail("Should be OK");
 		}
 	}

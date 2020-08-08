@@ -21,9 +21,7 @@
 package cz.petrary.geo.katapod;
 
 import java.nio.file.Path;
-import cz.petrary.geo.katapod.sign.SignException;
-import cz.petrary.geo.katapod.sign.SignResult;
-import cz.petrary.geo.katapod.stamp.StampException;
+
 
 /**
  * Interface pro nasledne klienty.
@@ -31,50 +29,62 @@ import cz.petrary.geo.katapod.stamp.StampException;
  * Kazdy klient musi provest konfiguraci sluzby, kterou chce pouzivat a nasledne sluzbu zavolat.
  * Sluzby nezapisuji zadne soubory na disk. Pripadny zapis si musi zajistit klient.
  *
- * Prikad podepsani adresare:
+ * Prikad vytvoreni textoveho souboru:
  * <pre>
  *      Katapod service = new KatapodImpl();
- *      Configuration sconf = ...
- *      SignResult result = service.signDir("/path/to/dir","verification_number", sconf);
- *
- *      //pripadne zapsani souboru na disk
- *      Files.write("/path/to/dir/Overeni_UOZI.txt"), result.getTextFile().getBytes("UTF-8"));
- *      Files.write("/path/to/dir/Overeni_UOZI.txt.p7s"), result.getSignedData());
+ *      service.setConfiguration(conf);
+ *      Path textFile = service.createTextFile(Paths.get("/path/to/dir"),"verification_number");
  *
  * </pre>
+ 
+ * Prikad podepsani adresare:
+ * <pre>
+ *      Path signedFile = service.signDir(textFile);
+  * </pre>
  *
  * Priklad orazitkovani adresare:
  * <pre>
- *      Katapod service = new KatapodImpl();
- * 		Configuration sconf = ...
- *      byte[] result = service.stamp(my_binary_data, sconf);
- *
- *      //pripadne zapsani souboru na disk
- *      Files.write("/path/to/dir/Overeni_UOZI.txt.p7s.tsr"), result);
+ *      Path stampFile = service.stamp(signedFile);
  * </pre>
  */
 public interface Katapod {
 
 	/**
+	 * Nastav konfiguracni hodnoty pro podpis a razitko.
+	 * @param config konfigurace podpisu a razitka (osobni certifikat OUZI, heslo, TSA URL...)
+	 * @throws KatapodException
+	 */
+	public void setConfiguration(Configuration config) throws KatapodException;
+	
+	
+	/**
 	 * Vytvor text soubor s SHA512 hash od vsech souboru v adresari. Tento podepis osobnim certifikatem UOZI.
 	 * Viz  § 18 odst. 5 vyhlášky č. 31/1995 Sb
 	 * @param dirPath plna cesta k adresari se soubory "k podpisu"
 	 * @param verifNumber cislo overeni
-	 * @param config konfigurace podpisu (osobni certifikat OUZI, heslo)
-	 * @return Vraci obsah nove vytvorenych dat dle § 18 odst. 5 vyhlášky č. 31/1995 Sb a jejich podpis
-	 * @throws DirSignException pokud nelze soubor vytvorit nebo podepsat
+	 * @return Cesta k nove vytvorenemu textovemu souboru
+	 * @throws KatapodException pokud nelze soubor vytvorit
 	 */
-	public SignResult signDir(Path dirPath, String verifNumber, Configuration config) throws SignException;
+	public Path createTextFile(Path dirPath, String verifNumber) throws KatapodException;
+
+	/**
+	 * Vytvor text soubor s SHA512 hash od vsech souboru v adresari. Tento podepis osobnim certifikatem UOZI.
+	 * Viz  § 18 odst. 5 vyhlášky č. 31/1995 Sb
+	 * @param dirPath plna cesta k textovemu souboru, ktery se ma podepsat
+	 * @return Cesta k nove vytvorenemu souboru s podpisem
+	 * @throws KatapodException pokud nelze soubor vytvorit nebo podepsat
+	 */
+	public Path signDir(Path textFilePath) throws KatapodException;
 
 
 	/**
 	 * Vytvor casove razitko k datum.
 	 * @param data - jsou opatreny casovym razitkem v externim souboru
-	 * @param config konfigurace razitek (URL TSA sluzby, prihlasovaci udaje uzivatele)
-	 * @return vysledek vraceny z TSA
-	 * @throws DirSignException pokud nelze casove razitko vytvorit
+	 * @param dirPath - adresar kam se ulozi vysledny soubor. Pokud je prazdny, zadny soubor se neulozi
+	 * @return Cesta k nove vytvorenemu souboru s casovym razitkem
+	 * @throws KatapodException pokud nelze casove razitko vytvorit
 	 */
-	public byte[] stamp(byte[] data, Configuration config) throws StampException;
+	public Path stamp(Path signedFilePath) throws KatapodException;
 
 
 }

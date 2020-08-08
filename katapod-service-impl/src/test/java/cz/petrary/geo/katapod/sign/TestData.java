@@ -33,6 +33,7 @@ import java.util.Optional;
 import org.bouncycastle.util.encoders.Base64;
 
 import cz.petrary.geo.katapod.Configuration;
+import cz.petrary.geo.katapod.textfile.TextFile;
 
 public class TestData implements Configuration {
 	
@@ -52,31 +53,31 @@ public class TestData implements Configuration {
 	
 	public static String correctTextContent() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("Náležitostmi a přesností odpovídá právním předpisům.\n");
-		sb.append(NUMBER).append("\n");
-		sb.append(LocalDate.now().format(DateTimeFormatter.ofPattern("d.M.yyyy"))).append("\n");
-		sb.append(OUZI_NAME).append("\n");
-		sb.append("----\n");
+		sb.append("Náležitostmi a přesností odpovídá právním předpisům.").append(TextFile.CRLF);
+		sb.append(NUMBER).append(TextFile.CRLF);
+		sb.append(LocalDate.now().format(DateTimeFormatter.ofPattern("d.M.yyyy"))).append(TextFile.CRLF);
+		sb.append(OUZI_NAME).append(TextFile.CRLF);
+		sb.append("----").append(TextFile.CRLF);
 		
 		sb.append("soubor0.txt;");
 		sb.append("E42C5E45751ABC4DB025B60BA3E477737B3A85C0633AFCDA90D3C68E441B5B8A9038B11065944DE961CA09454FC287BF39CFD3AE802FAEC5776F84AFC1C3854D");
-		sb.append("\n");
+		sb.append(TextFile.CRLF);
 		
 		sb.append("soubor1.txt;");
 		sb.append("4FC1D08E974B702E77C3165615459D9BAE74E6487B78CEEB8D6F7CA794B92A2331CF79D9372F63430DBCDB48C4368FDB08D4EF7708F0427F1A20AC153799D295");
-		sb.append("\n");
+		sb.append(TextFile.CRLF);
 
 		sb.append("soubor2.txt;");
 		sb.append("C45471D87A2BBD19FA7EDDC1F1A4D3026E41E1EDB0757B9BADD23EB6B403703E04000167387886133E80C8B6B4BEA1C93459702B82271000957FCC34D5F25778");
-		sb.append("\n");
+		sb.append(TextFile.CRLF);
 		
 		sb.append("soubor3.txt;");
 		sb.append("A207CADAA16CB59F0D8BD26D9EB3267BFF14CC87DE335F69DE0949C5CBC6D393F278573F579CC39A2E9AFA03F02F33D5C5E416372A4089B780AFA2E67876E725");
-		sb.append("\n");
+		sb.append(TextFile.CRLF);
 
 		sb.append("soubor4.txt;");
 		sb.append("DC54FCAC04A998CD694FF67CA8CA295A914A31940AA41D5C1E0F5614D968E1377249C2A3BEB6BB67FEB7903E7DCBB25DB2B21956B5DD21877947F1ED2E556A8B");
-		sb.append("\n");
+		sb.append(TextFile.CRLF);
 
 		return sb.toString();
 	}

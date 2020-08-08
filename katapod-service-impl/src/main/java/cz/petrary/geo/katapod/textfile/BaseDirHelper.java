@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with KATAPOD.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cz.petrary.geo.katapod.sign;
+package cz.petrary.geo.katapod.textfile;
 
 import java.io.File;
 import java.io.FilenameFilter;

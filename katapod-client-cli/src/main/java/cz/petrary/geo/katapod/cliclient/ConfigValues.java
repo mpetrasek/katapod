@@ -21,24 +21,24 @@
 package cz.petrary.geo.katapod.cliclient;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.PropertyResourceBundle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.petrary.geo.katapod.KatapodObjectFactory;
-import cz.petrary.geo.katapod.SignConfiguration;
-import cz.petrary.geo.katapod.StampConfiguration;
-import cz.petrary.geo.katapod.sign.SignException;
-import cz.petrary.geo.katapod.stamp.StampException;
+import cz.petrary.geo.katapod.Configuration;
 
 /**
  * Konfiguracni hodnoty klienta.
@@ -46,7 +46,7 @@ import cz.petrary.geo.katapod.stamp.StampException;
  * Hodnoty slouzi pro vytvoreni objektu SignConfiguration a StampConfiguration
  *
  */
-public class ConfigValues {
+public class ConfigValues implements Configuration {
 	
 	private static final Logger log = LoggerFactory.getLogger(Katacli.class);
 	
@@ -137,46 +137,6 @@ public class ConfigValues {
 		}
 	}
 		
-	
-	/**
-	 * Preved konfiguraci klienta na konfiguracni hodnoty podpisu
-	 * @return
-	 */
-	public SignConfiguration toSignConfig() {
-		try {
-			SignConfiguration sconf = KatapodObjectFactory.configureSignature()
-					.withCertificateFile(getCertificateFile().getAbsolutePath())
-					.andPassword(getCertificatePassword())
-					.setCleanResultFiles(isCleanOldResultFiles())
-					.build();
-			return sconf;
-		} catch (SignException e) {
-			log.error("Z konfiguracnich hodnot nelze sestavit validni udaje pro podpis");
-			throw new RuntimeException("Z konfiguracnich hodnot nelze sestavit validni udaje pro podpis");
-		}
-
-	}
-	
-	
-	
-	/**
-	 * Preved konfiguraci klienta na konfiguracni hodnoty razitka
-	 * @return
-	 */
-	public StampConfiguration toStampConfig() {
-		StampConfiguration sconf;
-		try {
-			sconf = KatapodObjectFactory.configureStamp()
-					.withTSA(getTsaUrl().toString())
-					.andOptionalUser(getTsaUserName())
-					.andOptionalPassword(getTsaUserPasswd())
-					.build();
-			return sconf;
-		} catch (StampException e) {
-			log.error("Z konfiguracnich hodnot nelze sestavit validni udaje pro razitko");
-			throw new RuntimeException("Z konfiguracnich hodnot nelze sestavit validni udaje pro razitko");
-		}
-	}
 	
 	//-------------------------------- PACKAGE ----------------------------------------------------
 		
@@ -354,6 +314,29 @@ public class ConfigValues {
 
 	public void setTsaUserPasswd(Optional<String> tsaUserPasswd) {
 		this.tsaUserPasswd = tsaUserPasswd;
+	}
+
+
+	@Override
+	public InputStream getCertificate() {
+		try {
+			return new FileInputStream(this.certificateFile);
+		} catch (FileNotFoundException e) {
+			log.error("Soubor s certifikatem neexistuje! {}", certificateFile);
+			throw new RuntimeException("Soubor s certifikatem neexistuje!");
+		}
+	}
+
+
+	@Override
+	public Map<String, String> getAdditionalConfiguration() {
+		if (!isCleanOldResultFiles()) {
+			Map<String, String> result = new HashMap<>();
+			result.put("keepResultFiles", "true");
+			return result;
+		} else {
+			return null;
+		}
 	}
 
 	

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -33,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.petrary.geo.katapod.Katapod;
-import cz.petrary.geo.katapod.KatapodObjectFactory;
+import cz.petrary.geo.katapod.KatapodImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -79,11 +80,15 @@ private static final Logger log = LoggerFactory.getLogger(Stampcli.class);
     private File signDir;
 	
 	
+	Path baseDir;
+	
+	
+	
 	@Override
 	public Integer call() throws Exception { 
 		try {
 		init();
-		stampDir(signDir, parent.cfg);
+		stampDir(baseDir, parent.cfg);
 		
 		return 0;
 		} catch (Exception ex) {
@@ -117,11 +122,11 @@ private static final Logger log = LoggerFactory.getLogger(Stampcli.class);
 			log.error("Cesta {} nevede k zadnemu existujicimu adresari!", signDir.getAbsolutePath());
 			throw new RuntimeException("Chybny vstupni adresar");
 		}
-
-		File toStampFile = new File(signDir.getAbsolutePath() + "/Overeni_UOZI.txt.p7s");
+		baseDir = Paths.get(signDir.getAbsolutePath());
+		File toStampFile = baseDir.resolve("Overeni_UOZI.txt.p7s").toFile();
 		if (!toStampFile.exists()) {
-			
-			
+			log.error("Adresar neobsahuje soubor s podpisem!");
+			throw new RuntimeException("Adresar neobsahuje soubor s podpisem!");
 		}
 	}
 
@@ -132,12 +137,11 @@ private static final Logger log = LoggerFactory.getLogger(Stampcli.class);
 	 * @param cfg
 	 * @throws Exception
 	 */
-	public static void stampDir(File dir, ConfigValues cfg) throws Exception {
-		Katapod service = KatapodObjectFactory.getKatapod();		
-		try(InputStream stream = Files.newInputStream(Paths.get(dir.getAbsolutePath() + "/" + Katacli.GENERATED_FILE_NAME + ".p7s"))) {
-			 byte[] result = service.stamp(stream.readAllBytes(), cfg.toStampConfig());
-			 Files.write(Paths.get(dir.getAbsolutePath() + "/" + Katacli.GENERATED_FILE_NAME + ".p7s.tsr"), result);
-	     } 
+	public static void stampDir(Path dir, ConfigValues cfg) throws Exception {
+		Katapod service = new KatapodImpl();	
+		service.setConfiguration(cfg);
+		Path signedFilePath = dir.resolve(Katacli.GENERATED_FILE_NAME + ".p7s");
+		service.stamp(signedFilePath);
 	}
 
 	public static void main(String[] args) {

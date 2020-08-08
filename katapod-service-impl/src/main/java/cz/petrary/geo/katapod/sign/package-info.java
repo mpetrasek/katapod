@@ -19,6 +19,6 @@
  */
 
 /**
- * Package pro vlastni podpis vsech souboru v jednom adresari
+ * Package pro vlastni podpis vsech souboru 
  */
 package cz.petrary.geo.katapod.sign;

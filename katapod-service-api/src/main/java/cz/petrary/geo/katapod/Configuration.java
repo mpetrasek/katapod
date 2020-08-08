@@ -80,7 +80,7 @@ public interface Configuration {
 	
 	
 	/**
-	 * Dodatecna (volitelna) konfigurace. Muze se jednat napr. o moznost promazat adresar pred podpisem, neukladani novych souboru apod.  
+	 * Dodatecna (volitelna) konfigurace. Muze se jednat napr. o moznost promazat adresar pred podpisem apod.  
 	 * @return mapa hodnot pro dodatecnou konfiguraci konkretni implementace.
 	 */
 	public Map<String, String> getAdditionalConfiguration();

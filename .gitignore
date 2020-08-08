@@ -6,3 +6,5 @@ target/
 .classpath
 .settings/
 
+# test data
+/data/**/Overeni_UOZI*

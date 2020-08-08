@@ -19,6 +19,9 @@
  */
 package cz.petrary.geo.katapod.stamp;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -39,6 +42,8 @@ import org.bouncycastle.tsp.TimeStampResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.petrary.geo.katapod.KatapodException;
+
 /**
  * Vytvor casove razitko 
  *
@@ -56,16 +61,22 @@ public class Stamp {
 	 * @param password heslo uzivatele u TSA (pokud je prazdne, pak je sluzba volana bez overeni uzivatele)
 	 * @return data vracena z TSA
 	 * @throws StampException nepovedlo se ziskat razitko 
-	 * @throws SignException 
+	 * @throws KatapodException 
 	 */
-	public byte[] makeTimestamp(byte[] dataToStamp, String tsaUrl, 
+	public byte[] makeTimestamp(File fileToStamp, String tsaUrl, 
 			                    Optional<String> userName, Optional<String> password)
-			throws StampException {
+			throws KatapodException {
 		//create request
+		byte[] dataToStamp;
+		try (FileInputStream fis = new FileInputStream(fileToStamp)) {
+			dataToStamp = fis.readAllBytes();
+		} catch (IOException e) {
+			throw new KatapodException("Nelze cist data ze souboru " + fileToStamp.getAbsolutePath(), e);
+		}
 		TimeStampRequest req = timestampRequest(dataToStamp);
 		try {
 			//send request to TSA
-			log.debug("Connecting to TSA {}", tsaUrl);
+			log.debug("Pripojuji se k TSA {}", tsaUrl);
 			byte[] request = req.getEncoded();
 			HttpsURLConnection conn = HttpsHelper.getConnection(tsaUrl, userName, password);
 			conn.setDoOutput(true);
@@ -77,12 +88,11 @@ public class Stamp {
 			requestOutStream.write(request);
 			requestOutStream.flush();
 			
-			log.info("Timestamp request was sent to TSA {}. Response code = {}", tsaUrl, conn.getResponseCode());
+			log.info("Zadost o casove razitko byla zaslana TSA {}. Response code = {}", tsaUrl, conn.getResponseCode());
 
 			//get response code from TSA
 			if (conn.getResponseCode() != 200) {
-				log.error("HTTP status: {}, message: {}", conn.getResponseCode(), conn.getResponseMessage());
-				throw new StampException(
+				throw new KatapodException(
 					"HTTP status: " + conn.getResponseCode() + ", message: " + conn.getResponseMessage());
 			}
 			
@@ -94,12 +104,11 @@ public class Stamp {
 			TimeStampResponse response = new TimeStampResponse(resp);
 
 			byte[] result = response.getEncoded();
-			log.info("Response parsed. Timestamp data has {} bytes", result.length);
+			log.info("Odpoved z TSA prectena. Velikost casoveho razitka = {} [byte]", result.length);
 			return result;
 			
 		} catch (Exception ex) {
-			log.error("Unable to get time stamp from TSA", ex);
-			throw new StampException("Unable to get time stamp from TSA", ex);
+			throw new KatapodException("Nelze ziskat casove razitko z TSA", ex);
 		}
 	}
 	
@@ -110,21 +119,20 @@ public class Stamp {
 	 * @return pozadavek k odeslani na TSA
 	 * @throws StampException
 	 */
-	TimeStampRequest timestampRequest(byte[] dataToStamp) throws StampException {
-		log.debug("Creating timestamp request");
+	TimeStampRequest timestampRequest(byte[] dataToStamp) throws KatapodException {
+		log.debug("Vytvarim zadost o casove razitko");
 		ASN1ObjectIdentifier hashOID = TSPAlgorithms.SHA512;
 		byte[] digestData;
 		try {
 			digestData = MessageDigest.getInstance(hashOID.getId(), new BouncyCastleProvider())
 					.digest(dataToStamp);
 		} catch (NoSuchAlgorithmException e) {
-			log.error("Unable to create digest data!", e);
-			throw new StampException("Unable to create digest data!", e);
+			throw new KatapodException("Nelze vytvorit digest data!", e);
 		}
 		TimeStampRequestGenerator reqgen = new TimeStampRequestGenerator();
 		reqgen.setCertReq(true);
 		TimeStampRequest result = reqgen.generate(hashOID, digestData, new BigInteger(16, new Random())); 
-		log.info("Timestamp request was generated");
+		log.info("Zadost o casove razitko byla vytvorena");
 		return result;
 	}
 

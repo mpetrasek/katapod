@@ -19,6 +19,8 @@
  */
 package cz.petrary.geo.katapod.sign;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -42,10 +44,11 @@ import org.bouncycastle.util.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.petrary.geo.katapod.KatapodException;
+
 
 /**
  * Podepise obsah textoveho souboru osobnim podpisem 
- *
  */
 public class Sign {
 
@@ -72,15 +75,15 @@ public class Sign {
 	 * Konstruktor - over platnost cest a hesla ke key store
 	 * @param keystorePath plna cesta ke keystore s osobnim certifikatem
 	 * @param password heslo ke keystore a privatnimu klici - ocekava se, ze je shodne!
-	 * @throws SignException nepovedlo se pracovat s osobnim certifikatem
+	 * @throws KatapodException nepovedlo se pracovat s osobnim certifikatem
 	 */
-	public Sign(String keystorePath, char[] password) throws SignException {
+	public Sign(String keystorePath, char[] password) throws KatapodException {
 		try {
 			InputStream input = Files.newInputStream(Paths.get(keystorePath), StandardOpenOption.READ);
 			this.configure(input, password);
 		} catch (IOException e) {
 			log.error("Unable to work with keystore",e);
-			throw new SignException("Unable to work with keystore",e);
+			throw new KatapodException("Unable to work with keystore",e);
 		}
 	}
 	
@@ -89,9 +92,9 @@ public class Sign {
 	 * Konstruktor - over platnost cest a hesla ke key store
 	 * @param keystoreData obsah keystore s osobnim certifikatem
 	 * @param password heslo ke keystore a privatnimu klici - ocekava se, ze je shodne!
-	 * @throws SignException nepovedlo se pracovat s osobnim certifikatem
+	 * @throws KatapodException nepovedlo se pracovat s osobnim certifikatem
 	 */
-	public Sign(InputStream keystoreData, char[] password) throws SignException {
+	public Sign(InputStream keystoreData, char[] password) throws KatapodException {
 		this.configure(keystoreData, password);
 	}
 
@@ -106,15 +109,18 @@ public class Sign {
 
 	/**
 	 * Podepis textovy obsah. Jedna se o obsah souboru Overeni_OUZI
-	 * @param text obsah souboru Overeni_OUZI (ten ale nemusi byt nikde ulozen)
+	 * @param txtFile soubor Overeni_OUZI - !musi byt ulozen - pokud se overuje z textu (String), pak ma jiny hash nez kdyz je ulozen v souboru!
 	 * @return podepsany text
-	 * @throws SignException nepovedlo se podepsat
+	 * @throws KatapodException nepovedlo se podepsat
 	 */
 	@SuppressWarnings("rawtypes")
-	public byte[] sign(String text) throws SignException {
+	public byte[] sign(File txtFile) throws KatapodException {
 		try {
 			addSecurityProvider();
-			byte[] data = text.getBytes();
+			byte[] data;
+			try (FileInputStream fis = new FileInputStream(txtFile)) {
+				data = fis.readAllBytes();
+			}
 			ArrayList<X509CertificateHolder> certList = new ArrayList<>();
 			CMSProcessableByteArray msg = new CMSProcessableByteArray(data);
 			X509CertificateHolder signerCertificate = new X509CertificateHolder(
@@ -131,7 +137,7 @@ public class Sign {
 			return gen.generate((CMSTypedData) msg, false).getEncoded();
 		} catch (Exception ex) {
 			log.error("Unable to sign the file!", ex);
-			throw new SignException("Unable to sign the file!", ex);
+			throw new KatapodException("Unable to sign the file!", ex);
 		}
 	}
 
@@ -152,9 +158,9 @@ public class Sign {
 	 * Over platnost key store
 	 * @param keystoreData obsah keystore s osobnim certifikatem
 	 * @param password heslo ke keystore a privatnimu klici - ocekava se, ze je shodne!
-	 * @throws SignException nepovedlo se pracovat s osobnim certifikatem
+	 * @throws KatapodException nepovedlo se pracovat s osobnim certifikatem
 	 */
-	private void configure(InputStream keystoreData, char[] password) throws SignException {
+	private void configure(InputStream keystoreData, char[] password) throws KatapodException {
 		try {
 			KeyStore keystore = KeyStore.getInstance("pkcs12");
 			try (keystoreData) {
@@ -166,7 +172,7 @@ public class Sign {
 			this.privateKey = (PrivateKey) keystore.getKey(alias, password); //heslo musi byt shodne!
 		} catch (Exception ex) {
 			log.error("Unable to work with user certificate!", ex);
-			throw new SignException("Unable to work with user certificate!", ex);
+			throw new KatapodException("Unable to work with user certificate!", ex);
 		}
 	}
 }

@@ -21,17 +21,26 @@ package cz.petrary.geo.katapod.sign;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+
+import cz.petrary.geo.katapod.KatapodException;
 
 class SignTest {
 
 	@Test
-	void test() {
+	void test() throws IOException {
 		try {
 			TestData data = new TestData();
 			Sign sign = new Sign(data.getCertificate(), data.getCertificatePassword().toCharArray());
-			/*byte[] result = */ sign.sign("Sign me!");
-		} catch (SignException e) {
+			Path testDir = TestData.TEST_DIR;
+			Path txtFile = testDir.resolve("Overeni_UOZI.txt");
+			Files.write(txtFile, "Text k podpisu".getBytes());
+			/*byte[] result = */ sign.sign(txtFile.toFile());
+		} catch (KatapodException e) {
 			fail("Should be OK");
 		}
 	}

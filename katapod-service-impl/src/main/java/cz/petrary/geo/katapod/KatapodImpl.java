@@ -20,19 +20,20 @@
 package cz.petrary.geo.katapod;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.ResourceBundle;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.petrary.geo.katapod.sign.BaseDirHelper;
-import cz.petrary.geo.katapod.sign.HashHelper;
 import cz.petrary.geo.katapod.sign.Sign;
-import cz.petrary.geo.katapod.sign.SignException;
-import cz.petrary.geo.katapod.sign.SignResult;
-import cz.petrary.geo.katapod.sign.TextFile;
 import cz.petrary.geo.katapod.stamp.Stamp;
-import cz.petrary.geo.katapod.stamp.StampException;
+import cz.petrary.geo.katapod.textfile.BaseDirHelper;
+import cz.petrary.geo.katapod.textfile.HashHelper;
+import cz.petrary.geo.katapod.textfile.TextFile;
 
 /**
  * Interface pro nasledne klienty.
@@ -45,69 +46,98 @@ import cz.petrary.geo.katapod.stamp.StampException;
 public class KatapodImpl implements Katapod {
 	
 	private static final Logger log = LoggerFactory.getLogger(KatapodImpl.class);
+	
+	ResourceBundle resourceBundle = ResourceBundle.getBundle("application");
+	
+	private Sign sign = null;
+	
+	private Configuration config = null;
 
-	
-	
+
 	@Override
-	public SignResult signDir(Path dirPath, String verifNumber, Configuration config) throws SignException {
-		if (!BaseDirHelper.dirCheck(dirPath)) {
-			log.error("Invalid directory!");
-			throw new SignException("Invalid directory");
+	public void setConfiguration(Configuration config) throws KatapodException {
+		if (this.checkConfiguration(config)) {
+			this.config = config;
+		} else {
+			throw new KatapodException("Konfiguracni soubory nejsou validni!");
 		}
-		if (config.getAdditionalConfiguration() == null || config.getAdditionalConfiguration().get("keepResultFiles") == null) {
+		
+	}
+
+
+
+	@Override
+	public Path createTextFile(Path dirPath, String verifNumber) throws KatapodException {
+		if (!BaseDirHelper.dirCheck(dirPath)) {
+			throw new KatapodException("Neexistujici adresar " + dirPath);
+		}
+		if (config == null || config.getAdditionalConfiguration() == null || config.getAdditionalConfiguration().get("keepResultFiles") == null) {
 			BaseDirHelper.prune(dirPath);  //promaz drive vygenerovane soubory. Ponech pouze pokud v additional config existuje klic "keepResultFiles"
 		}
-
+		List<String> hashes;
 		try {
-			List<String> hashes = HashHelper.hashForAllFiles(dirPath);
-			return sign(hashes, verifNumber, config);
-		} catch (IOException ioe) {
-			log.error("Unable to compute hash for files in directory {}", dirPath,ioe);
-			throw new SignException("Unable to compute hash for files", ioe);
+			hashes = HashHelper.hashForAllFiles(dirPath);
+		} catch (IOException e) {
+			throw new KatapodException("Nelze vytvorit HASH pro jednotlive soubory!", e);
 		}
-		
+		sign = new Sign(config.getCertificate(), config.getCertificatePassword().toCharArray());
+
+		//text file
+		String text = TextFile.create(sign.getAlias(),verifNumber, hashes);
+		Path textFile = dirPath.resolve(resourceBundle.getString("text.file.name"));
+		try {
+			Files.write(textFile, text.getBytes("UTF-8"));
+			log.info("Textovy soubor byl vytvoren");
+		} catch (IOException e) {
+			throw new KatapodException("Nelze zapsat vysledny textovy soubor!", e);
+		}
+
+		return textFile;
 	}
 
 	
 	
 	@Override
-	public byte[] stamp(byte[] data, Configuration config) throws StampException {
-		if (config == null) {
-			log.error("Invalid configuration!");
-			throw new StampException("Invalid configuration!");
+	public Path signDir(Path textFilePath) throws KatapodException {
+		try {
+			//signature file
+			byte[] signedData = sign.sign(textFilePath.toFile());
+			Path signatureFile = Paths.get(textFilePath.toString()+".p7s");
+			Files.write(signatureFile, signedData);
+
+			log.info("Soubor s podpisem byl vytvoren");
+			return signatureFile;
+		} catch (IOException ioe) {
+			throw new KatapodException("Nelze vytvorit soubor s podpisem", ioe);
 		}
 		
+	}
+
+	
+
+	@Override
+	public Path stamp(Path signedFilePath) throws KatapodException {
 		Stamp stamp = new Stamp();
-		byte[] result = stamp.makeTimestamp(data, config.getTsaUrl().toString(), 
+		byte[] result = stamp.makeTimestamp(signedFilePath.toFile(), config.getTsaUrl().toString(), 
 				                            config.getTsaUserName(), config.getTsaUserPasswd());
-		return result;
-	}
-
-	
-	
-	/**
-	 * Vytvor obsah textoveho souboru a ten podepis
-	 * @param hashes
-	 * @param verifNumber
-	 * @param config
-	 * @return
-	 * @throws SignException
-	 */
-	private SignResult sign(List<String> hashes, String verifNumber, Configuration config) throws SignException {
-		if (config == null) {
-			log.error("Invalid configuration!");
-			throw new SignException("Invalid configuration!");
+		Path stampFile = Paths.get(signedFilePath.toString()+".tsr");
+		try {
+			Files.write(stampFile, result);
+			return stampFile;
+		} catch (IOException e) {
+			throw new KatapodException("Nelze vytvorit soubor s casovym razitkem!", e);
 		}
-
-		Sign sign = new Sign(config.getCertificate(), config.getCertificatePassword().toCharArray());
-		String textFile = TextFile.create(sign.getAlias(),verifNumber, hashes);
-			
-		byte[] signedData = sign.sign(textFile);
-		SignResult result = new SignResult(textFile, signedData);
-			
-		log.info("Final text file was created and signed");
-		return result;	
 	}
+
+
+
+
+	private boolean checkConfiguration(Configuration config) {
+		/** @TODO */
+		return true;
+	}
+
+
 
 
 

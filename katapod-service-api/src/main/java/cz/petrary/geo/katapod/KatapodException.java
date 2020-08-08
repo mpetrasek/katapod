@@ -17,25 +17,32 @@
  *  You should have received a copy of the GNU General Public License
  *  along with KATAPOD.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cz.petrary.geo.katapod.sign;
 
-import static org.junit.jupiter.api.Assertions.*;
+package cz.petrary.geo.katapod;
 
-import java.util.List;
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class TextFileTest {
 
-	@Test
-	void test() {
-		try {
-			List<String> hashes = HashHelper.hashForAllFiles(TestData.TEST_DIR);
-			String result = TextFile.create(TestData.OUZI_NAME,TestData.NUMBER, hashes);
-			assertEquals(TestData.correctTextContent(), result);
-			//System.out.println(result);
-		} catch (Exception ex) {
-			fail(ex.getMessage());
-		}
+/**
+ * Vyjimka vyhozena pri jakekoliv chybe v prubehu podpisu.
+ *
+ */
+public class KatapodException extends Exception {
+	
+	private static final Logger log = LoggerFactory.getLogger(KatapodException.class);
+
+	
+	private static final long serialVersionUID = 1L;
+
+	public KatapodException(String msg, Throwable thr) {
+		super(msg, thr);
+		log.error(msg, thr);
+	}
+
+	public KatapodException(String msg) {
+		super(msg);
+		log.error(msg);
 	}
 
 }

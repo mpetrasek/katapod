@@ -21,40 +21,43 @@ package cz.petrary.geo.katapod;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+
+
 import org.junit.jupiter.api.Test;
 
-import cz.petrary.geo.katapod.sign.SignException;
-import cz.petrary.geo.katapod.sign.SignResult;
 import cz.petrary.geo.katapod.sign.TestData;
-import cz.petrary.geo.katapod.stamp.StampException;
+
 
 class KatapodImplTest {
 
 	@Test
-	void testSign() throws SignException {
+	void testSign() throws Exception {
 		Path testDir = TestData.TEST_DIR;
 		Katapod service = new KatapodImpl();
-		SignResult result = service.signDir(testDir,TestData.NUMBER, new TestData());
-		
-		assertEquals(TestData.correctTextContent(), result.getTextFile());
+		service.setConfiguration(new TestData());
+		Path textFilePath = service.createTextFile(testDir, TestData.NUMBER);
+		service.signDir(textFilePath);
+		try (FileInputStream fis = new FileInputStream(textFilePath.toFile())) {
+			String text = new String(fis.readAllBytes(),"UTF-8");
+			assertEquals(TestData.correctTextContent(), text);
+		}
 		 
-		//write files to disk
-		//Files.write("/path/to/dir/Overeni_UOZI.txt"), result.getTextFile().getBytes("UTF-8"));
-		//Files.write("/path/to/dir/Overeni_UOZI.txt.p7s"), result.getSignedData());
-		
 	}
 
 	
 	@Test
-	void testStamp() throws StampException {
+	void testStamp() throws Exception {
 		Katapod service = new KatapodImpl();
+		service.setConfiguration(new TestData());
 		
-		 @SuppressWarnings("unused")
-		byte[] result = service.stamp("SignResult.getSignedData".getBytes(), new TestData());
-		 
-		 //write file to disk
-		 //Files.write("/path/to/dir/Overeni_UOZI.txt.p7s.tsr"), result);
+		Path testDir = TestData.TEST_DIR;
+		Path signatureFile = testDir.resolve("Overeni_UOZI.txt.p7s");
+		Files.write(signatureFile, "SignResult.getSignedData".getBytes());
+
+		service.stamp(signatureFile);
 	}
 
 }

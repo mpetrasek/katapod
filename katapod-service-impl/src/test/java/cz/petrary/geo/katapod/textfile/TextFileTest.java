@@ -17,26 +17,27 @@
  *  You should have received a copy of the GNU General Public License
  *  along with KATAPOD.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cz.petrary.geo.katapod.sign;
+package cz.petrary.geo.katapod.textfile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class HashHelperTest {
+import cz.petrary.geo.katapod.sign.TestData;
+
+class TextFileTest {
 
 	@Test
-	void testOneHash() {
-		Path testFile = TestData.TEST_DIR.resolve("soubor0.txt");
+	void test() {
 		try {
-			String result = HashHelper.countHash(testFile.toFile(), HashHelper.getMessageDigest());
-			assertEquals("soubor0.txt;E42C5E45751ABC4DB025B60BA3E477737B3A85C0633AFCDA90D3C68E441B5B8A9038B11065944DE961CA09454FC287BF39CFD3AE802FAEC5776F84AFC1C3854D",
-					result);
-		} catch (IOException e) {
-			fail("Wrong hash");
+			BaseDirHelper.prune(TestData.TEST_DIR);
+			List<String> hashes = HashHelper.hashForAllFiles(TestData.TEST_DIR);
+			String result = TextFile.create(TestData.OUZI_NAME,TestData.NUMBER, hashes);
+			assertEquals(TestData.correctTextContent(), result);
+			//System.out.println(result);
+		} catch (Exception ex) {
+			fail(ex.getMessage());
 		}
 	}
 

@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with KATAPOD.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cz.petrary.geo.katapod.sign;
+package cz.petrary.geo.katapod.textfile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 public class TextFile {
 	
 	private static final Logger log = LoggerFactory.getLogger(TextFile.class);
+	
+	public static final String CRLF = "\r\n";
 
 	/**
 	 * Vytvor obsah souboru 
@@ -46,13 +48,13 @@ public class TextFile {
 	public static String create(String signerName, String number, List<String> hashes) {
 		StringBuffer result = new StringBuffer();
 		ResourceBundle resourceBundle = ResourceBundle.getBundle("application");
-        result.append(resourceBundle.getString("text.header")).append("\n");
-        result.append(number).append("\n");
-        result.append(getDate()).append("\n");
-        result.append(signerName).append("\n");
-        result.append(resourceBundle.getString("text.divider")).append("\n");
+        result.append(resourceBundle.getString("text.header")).append(CRLF);
+        result.append(number).append(CRLF);
+        result.append(getDate()).append(CRLF);
+        result.append(signerName).append(CRLF);
+        result.append(resourceBundle.getString("text.divider")).append(CRLF);
         for (String filehash : hashes) {
-        	result.append(filehash).append("\n");
+        	result.append(filehash).append(CRLF);
 		}
         
         log.debug("Result = \n{}", result.toString());

@@ -21,7 +21,7 @@ package cz.petrary.geo.katapod.cliclient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
@@ -29,8 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.petrary.geo.katapod.Katapod;
-import cz.petrary.geo.katapod.KatapodObjectFactory;
-import cz.petrary.geo.katapod.sign.SignResult;
+import cz.petrary.geo.katapod.KatapodImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -79,11 +78,13 @@ private static final Logger log = LoggerFactory.getLogger(Signcli.class);
     private String verNumber;
 
 	
+	Path baseDir;
+	
 	@Override
 	public Integer call() throws Exception { 
 		try {
 		init();
-		signDir(signDir, verNumber, parent.cfg);
+		signDir(baseDir, verNumber, parent.cfg);
 		return 0;
 
 		} catch (Exception ex) {
@@ -115,6 +116,7 @@ private static final Logger log = LoggerFactory.getLogger(Signcli.class);
 			log.error("Cesta {} nevede k zadnemu existujicimu adresari!", signDir.getAbsolutePath());
 			throw new RuntimeException("Chybny vstupni adresar");
 		}
+		baseDir = Paths.get(signDir.getAbsolutePath());
 
 	}
 
@@ -125,13 +127,11 @@ private static final Logger log = LoggerFactory.getLogger(Signcli.class);
 	 * @param cfg
 	 * @throws Exception
 	 */
-	public static void signDir(File dir, String number, ConfigValues cfg) throws Exception {
-		Katapod service = KatapodObjectFactory.getKatapod();
-		SignResult result = service.signDir(dir.getAbsolutePath(),number, cfg.toSignConfig());
-		
-		 //write files to disk
-		 Files.write(Paths.get(dir.getAbsolutePath() + "/" + Katacli.GENERATED_FILE_NAME), result.getTextFile().getBytes("UTF-8"));
-		 Files.write(Paths.get(dir.getAbsolutePath() + "/" + Katacli.GENERATED_FILE_NAME + ".p7s"), result.getSignedData());
+	public static void signDir(Path dirPath, String number, ConfigValues cfg) throws Exception {
+		Katapod service = new KatapodImpl();
+		service.setConfiguration(cfg);
+		Path textFilePath = service.createTextFile(dirPath, number);
+		service.signDir(textFilePath);
 	}
 
 	

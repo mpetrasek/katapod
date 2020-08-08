@@ -17,24 +17,30 @@
  *  You should have received a copy of the GNU General Public License
  *  along with KATAPOD.  If not, see <https://www.gnu.org/licenses/>.
  */
+package cz.petrary.geo.katapod.textfile;
 
-package cz.petrary.geo.katapod.sign;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.junit.jupiter.api.Test;
+
+import cz.petrary.geo.katapod.sign.TestData;
 
 
-/**
- * Vyjimka vyhozena pri jakekoliv chybe v prubehu podpisu.
- *
- */
-public class SignException extends Exception {
-	
-	private static final long serialVersionUID = 1L;
+class HashHelperTest {
 
-	public SignException(String msg, Throwable thr) {
-		super(msg, thr);
-	}
-
-	public SignException(String msg) {
-		super(msg);
+	@Test
+	void testOneHash() {
+		Path testFile = TestData.TEST_DIR.resolve("soubor0.txt");
+		try {
+			String result = HashHelper.countHash(testFile.toFile(), HashHelper.getMessageDigest());
+			assertEquals("soubor0.txt;E42C5E45751ABC4DB025B60BA3E477737B3A85C0633AFCDA90D3C68E441B5B8A9038B11065944DE961CA09454FC287BF39CFD3AE802FAEC5776F84AFC1C3854D",
+					result);
+		} catch (IOException e) {
+			fail("Wrong hash");
+		}
 	}
 
 }
